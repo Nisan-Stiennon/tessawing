@@ -11,13 +11,14 @@ import Jama.*;
 public class Tessawing implements KeyListener{
 
 // windowing stuff:
-final static String appName = "Guacamole";
+final static String appName = "Tessawing";
 JFrame window;
 CardLayout layout;
 final String CARD_MENU = "menu";
 final String CARD_LOADING = "loading";
 final String CARD_GAME = "game";
 // gaming stuff:
+// scene is the root node of the tree of objects.
 Root scene;
 // keyboard stuff:
 long lastTime = 0;
@@ -56,7 +57,7 @@ public Tessawing(){
 	}
 
 public static void main(String[] args){
-	// Swing isn't thread-safe, so we have to do this:
+	// Swing isn't thread-safe, so we have to set up the GUI in the appropriate thread:
 	javax.swing.SwingUtilities.invokeLater(new Runnable(){
 		public void run(){
 			// standard hack to prevent the Canvas3D from disappearing randomly:
@@ -67,25 +68,24 @@ public static void main(String[] args){
 		});
 	}
 
-// the CardLayout doesn't work correctly at the moment. Java3D isn't very compatible with Swing.
+// loadWorld() creates the Java3D scene.
+// the CardLayout doesn't work correctly at the moment; Java3D isn't very compatible with Swing.
 public void loadWorld(){
 	window.add(new JLabel("Loading..."), CARD_LOADING);
 	layout.show(window.getContentPane(), CARD_LOADING);
 	Canvas3D canvas = new Canvas3D(SimpleUniverse.getPreferredConfiguration());
 	SimpleUniverse universe = new SimpleUniverse(canvas);
+	// increase the argument to setMinimumFrameCycleTime() to decrease the frame rate.
 	universe.getViewer().getView().setMinimumFrameCycleTime(5);
 	scene = World_Test.initializeWorld(universe);
-	/* test code:
-	BranchGroup bg = new BranchGroup();
-	bg.addChild(new Temp3());
-	universe.getLocale().addBranchGraph(bg);
-	*/
+	canvas.setFocusable(true);
+	canvas.addKeyListener(this);
 	window.add(canvas, CARD_GAME);
 	layout.show(window.getContentPane(), CARD_GAME);
 	}
 
 public void keyPressed(KeyEvent e){
-	/* when the user holds down a key, the system will rapidly fire off keyPressed events. If every one of those events required us to do lots of computation, we'd be overwhelmed. So we drop the event unless it's the first one in a while.
+	/* when the user holds down a key, the system will rapidly fire off keyPressed events. If every one of those events required us to do lots of computation, we'd be overwhelmed. So we drop the event unless it's the first one in a while. (It's not clear whether there's a need for this hack.)
 	if(System.currentTimeMillis() - lastTime > 100){
 		lastTime = System.currentTimeMillis();
 		handleKeyboardEvent(e);
@@ -101,6 +101,7 @@ public void keyReleased(KeyEvent e){
 public void keyTyped(KeyEvent e){
 	}
 	
+// handleKeyboardEvent() updates variables in a Root object, while the Root object has a method (processStimulus()) which is called by a separate thread. It's worth considering threading issues. Maybe use accessor methods.
 void handleKeyboardEvent(KeyEvent e){
 	int key = e.getKeyCode();
 	// currently, we only handle keypresses that have to do with navigation

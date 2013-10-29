@@ -3,6 +3,8 @@ import javax.media.j3d.*;
 import java.util.*;
 import javax.vecmath.*;
 
+// The root node of the scene tree is supposed to be a Root object. When the player wants to move around in the scene, we instead manipulate the Root object, causing everything in the scene to move around the point of view, simulating motion.
+
 class Root extends Node{
 
 // As written, linear advancement works just like rotation, which means you have to hold down the space bar to move. In future versions, the player will be moving forward by default.
@@ -19,9 +21,9 @@ double maximumAcceleration = 3;
 // angular velocity works like forward velocity, except there are six components
 Matrix angularVelocity = new Matrix(6, 1);
 Matrix targetAngularVelocity = new Matrix(6, 1);
-double maximumAngularVelocityComponent = 1;
-double maximumAngularAcceleration = 1;
-// this is a basis for the lie algebra so(4) as a subspace of the 4x4 matrices: pitch, yaw, roll, and three other rotations.
+double maximumAngularVelocityComponent = 1.5;
+double maximumAngularAcceleration = 2.3;
+// this is a basis for the lie algebra so(4) as a  subspace of the 4x4 matrices: pitch, yaw, roll, and three other rotations.
 double[][][] rotationsd_ = {
 	{{0, 0, 0, 0},
 	 {0, 0, -1, 0},
@@ -86,13 +88,14 @@ public void processStimulus(Enumeration e){
 	position = differentialRotation.times(position.plus(temp));
 	// since we added a tangent vector to an element of SO(4), orientation is no longer quite orthonormal. if it's too far off, we'll have to reorthonormalize.
 	double aberration = orthonormalAberration(orientation);
-	//System.out.print("orthonormal aberration: " + aberration);
+	/*System.out.print("orthonormal aberration: " + aberration);
 	if(aberration > .00001){
 		System.out.println(" reorthonormalizing... ");
 		orientation = reorthonormalize(orientation);
 		}
 	else System.out.println("ok");
-	if(Math.abs(angularVelocityDifference.normF()) > Double.MIN_VALUE*10 || Math.abs(velocityDifference) > Double.MIN_VALUE*10)	update();
+	*/
+	update();
 	wakeupOn(new WakeupOnElapsedFrames(0));
 	}
 	

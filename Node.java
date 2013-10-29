@@ -66,5 +66,5 @@ void modifyAffine(Matrix chgOrientation, Matrix chgPosition){
 public void initialize(){}
 
 public void processStimulus(Enumeration e){}
-	
+
 }
